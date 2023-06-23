@@ -1,3 +1,4 @@
+import './assets/sass/index.scss'
 
 import API from "./js/api";
 
