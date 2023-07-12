@@ -1,13 +1,7 @@
+import UniqueHash from "./security/hasher";
 import './assets/sass/index.scss'
+import Start from "./start";
 
-import API from "./js/api";
-
-API();
- 
-   document.getElementById('root').innerHTML = `
-     <h1>Crypto Currency Rates</h1>
-     <ul id="list-crypto"></ul>
-     <div id="loading">Loading...</div>
-     <div id="notification">No more records found.</div>
-   `;
- 
+const DOM = document.getElementById('app');
+DOM.id = UniqueHash();
+Start(DOM);
