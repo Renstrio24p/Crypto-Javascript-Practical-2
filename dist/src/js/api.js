@@ -1,64 +1,72 @@
+import styles from '../assets/sass/modules/app.module.scss';
 
-export default function API(){
+export default function API() {
+  fetch('https://api.coingecko.com/api/v3/exchange_rates?page=1')
+    .then((response) => response.json())
+    .then((data) => {
+      const rates = data.rates;
+      // Access the rates data here and perform further operations
+      displayCurrencies(rates);
+      console.log(rates);
+    })
+    .catch((error) => {
+      console.log('An error occurred while fetching data:', error);
+    });
 
-    const ListCrypto = document.getElementById('list-crypto');
-    const Loading = document.getElementById('loading');
-    const Notification = document.getElementById('notification');
+  function displayCurrencies(rates) {
+    const rootElement = document.getElementById('start');
+    rootElement.innerHTML = '';
 
-    let Page = 1;
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.placeholder = 'Search Currency';
+    searchInput.addEventListener('input', handleSearch);
 
-    function DataFetch(){
-        Loading.style.display = 'block';
+    const currenciesContainer = document.createElement('div');
 
-        fetch(`https://api.coingecko.com/api/v3/exchange_rates?page=${Page}`)
-        .then((response) => response.json())
-        .then((data) => {
-            const Rates = data.Rates;
-
-            {
-                Rates.length === 0 ? 
-                Notification.style.display = 'block' :
-                Rates.forEach((Rates)=>{
-                    const ItemList = document.createElement('li');
-                    ItemList.textContent = `
-                        ${Rates.name} : ${Rates.value}`;
-                        ListCrypto.appendChild(ItemList);
-
-                });
-
-                Page++;
-                Loading.style.display = 'none';
-            }
-        })
-        .catch((error) => {
-            console.log('An Error occured while fetching data : ', error);
-            Loading.style.display = 'none';
-        });
-    }
-    // Create Lazy Load Function
-    
-    function LazyLoading(){
-        const TopScroll = window.pageYOffset || document.documentElement.scrollTop;
-        const WinHeight = window.innerHeight || document.documentElement.clientHeight;
-        const DocHeight = document.documentElement.scrollHeight;
-
-        {
-            scrollTop + WinHeight >= DocHeight - 100 && DataFetch();
-        }
-        return DataFetch();
+    for (const key in rates) {
+      const currency = rates[key];
+      const currencyElement = document.createElement('div');
+      currencyElement.innerHTML = `
+        <div class=${styles['crypto-box']}>
+          <div class=${styles['image-container']}>
+            <img src="${getImageURL(currency.type)}" alt="${currency.type}" />
+          </div>
+          <div>
+            <h2>Name: ${currency.name}</h2>
+            <p>Type: ${currency.type}</p>
+            <p>Unit: ${currency.unit}</p>
+            <p>Value: ${currency.value}</p>
+          </div>
+        </div>
+      `;
+      currenciesContainer.appendChild(currencyElement);
     }
 
-    window.addEventListener('scroll', LazyLoading);
+    rootElement.appendChild(searchInput);
+    rootElement.appendChild(currenciesContainer);
+  }
 
-    document.getElementById('container-list').innerHTML = `
-    
-        <h1> Crypto Currency Rates </h1>
-        <ul id="list-crypto"></ul>
-        <div id="loading"> Loading... </div>
-        <div id="notification"> No more record found.</div>
-    
-    `
+  function handleSearch(event) {
+    const searchTerm = event.target.value.toLowerCase();
+    const currencyElements = document.querySelectorAll(`.${styles['crypto-box']}`);
 
+    currencyElements.forEach((currencyElement) => {
+      const currencyName = currencyElement.querySelector('h2').textContent.toLowerCase();
+      currencyElement.style.display = currencyName.includes(searchTerm) ? 'flex' : 'none';
+    });
+  }
 
+  function getImageURL(type) {
+    // Add conditions to return the image URL based on the currency type
+    if (type === 'crypto') {
+      return './src/assets/images/crypto.jpg';
+    } else if (type === 'fiat') {
+      return './src/assets/images/fiat.webp';
+    } else if (type === 'commodity') {
+      return './src/assets/images/commodity.jpg';
+    } else {
+      return 'path_to_default_image.png';
+    }
+  }
 }
-
